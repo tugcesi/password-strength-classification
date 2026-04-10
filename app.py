@@ -1,7 +1,6 @@
 import math
 import streamlit as st
 import numpy as np
-import joblib
 import tensorflow as tf
 from collections import Counter
 
@@ -12,12 +11,10 @@ st.set_page_config(
     layout="centered",
 )
 
-# ── Model & Scaler loading ────────────────────────────────────────────────────
+# ── Model loading ─────────────────────────────────────────────────────────────
 @st.cache_resource
-def load_model_and_scaler():
-    model = tf.keras.models.load_model("password_model.h5")
-    scaler = joblib.load("password.joblib")
-    return model, scaler
+def load_model():
+    return tf.keras.models.load_model("password_model.h5")
 
 
 # ── Feature extraction (must match notebook exactly) ─────────────────────────
@@ -58,12 +55,10 @@ STRENGTH_MAP = {
 }
 
 
-def predict_strength(password: str, model, scaler):
+def predict_strength(password: str, model):
     features = extract_features(password)
-    feature_values = [[features[k] for k in FEATURE_ORDER]]
-    feature_array = np.array(feature_values, dtype=float)
-    scaled = scaler.transform(feature_array)
-    probabilities = model.predict(scaled, verbose=0)[0]
+    feature_array = np.array([[features[k] for k in FEATURE_ORDER]], dtype=float)
+    probabilities = model.predict(feature_array, verbose=0)[0]
     encoded_label = int(np.argmax(probabilities))
     confidence = float(probabilities[encoded_label])
     return encoded_label, confidence, features, probabilities
@@ -102,7 +97,7 @@ parolanın güçlülük seviyesini 4 kategoride tahmin eder:
 st.title("🔐 Parola Güçlülük Analizi")
 st.markdown("Parolanızı girin ve güçlülük seviyesini öğrenin.")
 
-model, scaler = load_model_and_scaler()
+model = load_model()
 
 password = st.text_input(
     "Parolanızı girin:",
@@ -119,7 +114,7 @@ if st.button("🔍 Analiz Et", use_container_width=True):
         st.warning("⚠️ Lütfen bir parola girin.")
     else:
         with st.spinner("Analiz ediliyor…"):
-            encoded_label, confidence, features, probabilities = predict_strength(password, model, scaler)
+            encoded_label, confidence, features, probabilities = predict_strength(password, model)
 
         strength_level, label_tr, label_en, emoji, progress_val = STRENGTH_MAP[encoded_label]
 

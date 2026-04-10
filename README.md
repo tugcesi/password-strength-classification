@@ -114,7 +114,6 @@ password-strength-classification/
 ├── app.py                              # Streamlit uygulaması
 ├── requirements.txt                    # Python bağımlılıkları
 ├── password_model.h5                   # Eğitilmiş Keras modeli
-├── password.joblib                     # StandardScaler
 ├── data.csv                            # Örnek veri seti
 ├── PasswordStrenghtClassification.ipynb # Eğitim notebook'u
 └── README.md
